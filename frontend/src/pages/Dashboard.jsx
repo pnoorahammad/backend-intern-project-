@@ -20,7 +20,7 @@ const Dashboard = () => {
   const fetchTasks = async () => {
     try {
       const response = await api.get('/tasks');
-      setTasks(response.data);
+      setTasks(response.data.tasks || []);
     } catch (err) {
       if (err.response?.status === 401) {
         handleLogout();

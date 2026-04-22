@@ -2,10 +2,25 @@ const { Task } = require('../models');
 
 const getTasks = async (req, res, next) => {
   try {
-    const tasks = await Task.findAll({
-      where: req.user.role === 'admin' ? {} : { userId: req.user.id }
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    const query = req.user.role === 'admin' ? {} : { userId: req.user.id };
+
+    const tasks = await Task.findAndCountAll({
+      where: query,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']]
     });
-    res.status(200).json(tasks);
+
+    res.status(200).json({
+      totalItems: tasks.count,
+      totalPages: Math.ceil(tasks.count / limit),
+      currentPage: page,
+      tasks: tasks.rows
+    });
   } catch (error) {
     next(error);
   }
